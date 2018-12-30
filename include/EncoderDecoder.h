@@ -5,4 +5,13 @@
 #ifndef CLIENT_ENCODERDECODER_H
 #define CLIENT_ENCODERDECODER_H
 
+#include <string>
+#include "../include/Controller.h"
+
+class EncoderDecoder {
+private:
+public:
+    static void start(Controller &controller);
+public:
+};
 #endif //CLIENT_ENCODERDECODER_H

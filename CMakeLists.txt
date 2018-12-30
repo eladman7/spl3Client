@@ -11,6 +11,6 @@ if (Boost_FOUND)
     add_executable(Client include/connectionHandler.h
             src/connectionHandler.cpp
             src/echoClient.cpp
-            include/EncoderDecoder.h)
+            include/EncoderDecoder.h src/EncoderDecoder.cpp include/Controller.h src/Controller.cpp)
     target_link_libraries(Client ${Boost_LIBRARIES})
 endif ()
