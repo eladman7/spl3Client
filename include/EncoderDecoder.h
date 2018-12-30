@@ -4,14 +4,19 @@
 
 #ifndef CLIENT_ENCODERDECODER_H
 #define CLIENT_ENCODERDECODER_H
-
-#include <string>
 #include "../include/Controller.h"
+#include <string>
 
 class EncoderDecoder {
-private:
+
 public:
+    EncoderDecoder();
+    char* encode(std::string stringToEncode);
+    std::string decode(char bytes[]);
     static void start(Controller &controller);
-public:
+
+private:
+    short bytesToShort(char* bytesArr);
+    void shortToBytes(short num, char* bytesArr);
 };
 #endif //CLIENT_ENCODERDECODER_H
