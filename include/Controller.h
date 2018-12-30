@@ -5,10 +5,17 @@
 #ifndef CLIENT_CONTROLLER_H
 #define CLIENT_CONTROLLER_H
 
+#include <string>
+
 class Controller{
 private:
     bool terminate;
+    std::string input;
 public:
+    const std::string &getInput() const;
+
+    void setInput(const std::string &input);
+
     bool isTerminate() const;
 
     void setTerminate(bool terminate);

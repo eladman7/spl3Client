@@ -26,13 +26,14 @@ int main (int argc, char *argv[]) {
     controller.setTerminate(false);
 
     EncoderDecoder encoderDecoder = EncoderDecoder();
-    boost::thread communicationThread(encoderDecoder.start, controller);
+    boost::thread communicationThread(encoderDecoder.start, controller, connectionHandler);
 
     while (1) {
         const short bufsize = 1024;
         char buf[bufsize];
         std::cin.getline(buf, bufsize);
 		std::string line(buf);
+		controller.setInput(line);
 		if (controller.isTerminate()){ // received terminate from communication
             break;
 		}

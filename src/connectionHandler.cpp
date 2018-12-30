@@ -64,14 +64,14 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
 }
  
 bool ConnectionHandler::getLine(std::string& line) {
-    return getFrameAscii(line, '\n');
+    return getFirstTwoBitsAsNum(line, '\n');
 }
 
 bool ConnectionHandler::sendLine(std::string& line) {
     return sendFrameAscii(line, '\n');
 }
  
-bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
+bool ConnectionHandler::getFirstTwoBitsAsNum(std::string &frame, char delimiter) {
     char ch;
     // Stop when we encounter the null character. 
     // Notice that the null character is not appended to the frame string.
@@ -85,6 +85,31 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
         return false;
     }
     return true;
+}
+
+
+bool ConnectionHandler::getFirstTwoBitsAsNum() {
+    int i = 0
+    char ch;
+    char *bytesArr;
+
+    try {
+        do{
+            getBytes(&ch, 1);
+            bytesArr[i] =    d(1, ch);
+            i += 1;
+        }while (i<2);
+    } catch (std::exception& e) {
+        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        return false;
+    }
+    return true;
+}
+
+short ConnectionHandler::bytesToShort(char *bytesArr) {
+    short result = (short) ((bytesArr[0] & 0xff) << 8);
+    result += (short) (bytesArr[1] & 0xff);
+    return result;
 }
  
 bool ConnectionHandler::sendFrameAscii(const std::string& frame, char delimiter) {

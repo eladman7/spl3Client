@@ -5,10 +5,19 @@
 #include <iostream>
 #include "../include/EncoderDecoder.h"
 #include "../include/Controller.h"
+#include "../include/connectionHandler.h"
 
 
-void EncoderDecoder::start(Controller &controller) {
+void EncoderDecoder::start(Controller &controller, ConnectionHandler &connectionHandler) {
     while (1){
+        std::string line = controller.getInput();
+        bool result = connectionHandler.sendLine(line, '\n');
+        if (result){
+            std::string answer = decode()
+
+        }
+
+
         // do everything here
         std::string response;
         if (response == "what we need to terminate i dont know"){
