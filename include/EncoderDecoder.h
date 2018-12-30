@@ -1,0 +1,8 @@
+//
+// Created by Elad Man on 30/12/2018.
+//
+
+#ifndef CLIENT_ENCODERDECODER_H
+#define CLIENT_ENCODERDECODER_H
+
+#endif //CLIENT_ENCODERDECODER_H
