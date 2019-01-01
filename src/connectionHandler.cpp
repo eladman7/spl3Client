@@ -89,14 +89,14 @@ bool ConnectionHandler::getFirstTwoBitsAsNum(std::string &frame, char delimiter)
 
 
 bool ConnectionHandler::getFirstTwoBitsAsNum() {
-    int i = 0
+    int i = 0;
     char ch;
     char *bytesArr;
 
     try {
         do{
             getBytes(&ch, 1);
-            bytesArr[i] =    d(1, ch);
+//            bytesArr[i] =    d(1, ch);
             i += 1;
         }while (i<2);
     } catch (std::exception& e) {

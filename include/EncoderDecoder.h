@@ -4,17 +4,15 @@
 
 #ifndef CLIENT_ENCODERDECODER_H
 #define CLIENT_ENCODERDECODER_H
-#include "../include/Controller.h"
 #include "../include/connectionHandler.h"
 #include <string>
+#include <mutex>
 
 class EncoderDecoder {
 
 public:
-    EncoderDecoder();
     char* encode(std::string stringToEncode);
     std::string decode(char bytes[]);
-    static void start(Controller &controller, ConnectionHandler &connectionHandler);
 
 private:
     short bytesToShort(char* bytesArr);
