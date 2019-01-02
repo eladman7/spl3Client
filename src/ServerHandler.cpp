@@ -68,7 +68,9 @@ void ServerHandler::run() {
             }
             if (command == "REGISTER"){
                 connectionHandler.sendShort(1); // 1
+                // user name
                 connectionHandler.sendFrameAscii(words[1], 0x0);
+                // pass
                 success_send = connectionHandler.sendFrameAscii(words[2], 0x0);
                 if (success_send) {
                     std::cout << "woo" << std::endl;

@@ -39,7 +39,9 @@ public:
 
     bool getFirstTwoBitsAsNum();
     short bytesToShort(char * bytesArr);
-	
+
+    bool getFrameAscii(std::string& frame, char delimiter);
+
 	// Send an ascii line from the server
     // Returns false in case connection closed before all the data is sent.
     bool sendLine(std::string& line);
