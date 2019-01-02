@@ -111,6 +111,8 @@ short ConnectionHandler::bytesToShort(char *bytesArr) {
     result += (short) (bytesArr[1] & 0xff);
     return result;
 }
+
+
  
 bool ConnectionHandler::sendFrameAscii(const std::string& frame, char delimiter) {
 	bool result=sendBytes(frame.c_str(),frame.length());
@@ -125,4 +127,21 @@ void ConnectionHandler::close() {
     } catch (...) {
         std::cout << "closing failed: connection already closed" << std::endl;
     }
+}
+
+bool ConnectionHandler::sendShort(short sh) {
+    // short to char*
+    char buffer[sizeof(short)];
+    char * p_int = (char *)&sh;
+    buffer[0] = p_int[0];
+    buffer[1] = p_int[1];
+
+    shortToBytes(sh, buffer);
+
+    return sendBytes(buffer, 2);
+}
+
+void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
+    bytesArr[0] = ((num >> 8) & 0xFF);
+    bytesArr[1] = (num & 0xFF);
 }
