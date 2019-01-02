@@ -148,7 +148,7 @@ void ServerHandler::listen() {
             displayMe += "ACK";
             short originOpcode = getNextShort(handler);
             displayMe += " ";
-            displayMe += originOpcode;
+            displayMe += to_string(originOpcode);
             // handle
             if (originOpcode == 4 or originOpcode == 7){ // follow or user lists
                 short usersCount = getNextShort(handler);
