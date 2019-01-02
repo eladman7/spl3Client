@@ -97,10 +97,10 @@ string ServerHandler::getNextString(ConnectionHandler &connectionHandler) const 
 }
 
 short ServerHandler::getNextShort(ConnectionHandler &connectionHandler) const {
-    char* opcodeResult;
-    bool success = connectionHandler.getBytes(opcodeResult, 2);
+    char opcodeBytes [2];
+    bool success = connectionHandler.getBytes(opcodeBytes, 2);
     if (success){
-        short opcode = connectionHandler.bytesToShort(opcodeResult);
+        short opcode = connectionHandler.bytesToShort(opcodeBytes);
         return opcode;
     } else{
         return -1;
@@ -142,7 +142,6 @@ void ServerHandler::listen() {
             cout << displayMe << endl;
             displayMe.clear();
             continue;
-            //todo print this in the main thread
         }
 
         if (opcode == 10){ // ack
