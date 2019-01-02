@@ -7,6 +7,7 @@
 
 #include <mutex>
 #include "SharedResourceInfo.h"
+#include "connectionHandler.h"
 
 using namespace std;
 
@@ -18,6 +19,9 @@ public:
 
     void run();
 
+    short getNextShort(ConnectionHandler &connectionHandler) const;
+
+    string getNextString(ConnectionHandler &connectionHandler) const;
 };
 
 
