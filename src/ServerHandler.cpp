@@ -10,173 +10,84 @@
 
 using namespace std;
 
-void ServerHandler::run() {
-    ConnectionHandler connectionHandler(sharedResourceInfo.getHost(), sharedResourceInfo.getPort());
-    if (!connectionHandler.connect()) {
-        cerr << "Cannot connect to " << sharedResourceInfo.getHost() << ":" << sharedResourceInfo.getPort()
-                  << endl;
-        exit(1);
+void ServerHandler::send(string input) {
+    ConnectionHandler &handler = shared.getConnectionHandler();
+
+    string command;
+    bool success_send;
+    vector<string> words;
+    boost::split(words, input , boost::is_any_of(" "));
+    if (words.size() < 1){
+        return;
     }
-    while (!sharedResourceInfo.shouldTerminate()) {
-        lock_guard<mutex> lock(sharedResourceInfo.getMutex());
-        string displayMe;
+    command = words[0];
+    boost::to_upper(command);
 
-        // pending notifications
-        char* notifyBytes;
-        bool success = connectionHandler.getBytes(notifyBytes, 2);
-        if (success){
-            short notifycode = connectionHandler.bytesToShort(notifyBytes);
-            if (notifycode == 9){
-                char* isPublicBytes;
+    if (command == "REGISTER"){
+        handler.sendShort(1); // user name
+        handler.sendFrameAscii(words[1], 0x0);// pass
+        success_send = handler.sendFrameAscii(words[2], 0x0);
 
-                // pm/public
-                connectionHandler.getBytes(isPublicBytes, 1);
-                short isPublicShort = connectionHandler.bytesToShort(isPublicBytes);
-                if (isPublicShort == 0){
-                    displayMe += "PM";
-                }else if (isPublicShort == 1){
-                    displayMe += "Public";
-                } else{
-                    cout << "invalid notification public/pm" << endl;
-                    continue;
-                }
+    } else if (command == "LOGIN"){
+        handler.sendShort(2); // user name
+        handler.sendFrameAscii(words[1], 0x0); // pass
+        success_send = handler.sendFrameAscii(words[2], 0x0);
 
-                //
-                string postingUser = getNextString(connectionHandler);
-                displayMe += " ";
-                displayMe += postingUser;
+    } else if (command == "LOGOUT"){
+        handler.sendShort(3);
 
-                string content = getNextString(connectionHandler);
-                displayMe += " ";
-                displayMe += content;
-                cout << displayMe << endl;
-                displayMe.clear();
-                continue;
-                //todo print this in the main thread
-            }
+    } else if (command == "FOLLOW"){
+        sendFollow(handler, words);
+
+    }else if (command == "POST"){
+        handler.sendShort(5);
+        handler.sendFrameAscii(words[1], 0x0); // content
+
+    }else if (command == "PM"){
+        handler.sendShort(6);
+        handler.sendFrameAscii(words[1], 0x0); // username
+        handler.sendFrameAscii(words[2], 0x0); // content
+
+    }else if (command == "USERLIST"){
+        handler.sendShort(7);
+
+    }else if (command == "STAT"){
+        handler.sendShort(8);
+        handler.sendFrameAscii(words[1], 0x0); // username
+
+    }
+
+    if (success_send) {
+        shared.print("success send");
+    }
+
+}
+
+void ServerHandler::sendFollow(ConnectionHandler &handler, const vector<string> &words) const {
+    handler.sendShort(4);
+
+    int isUnfollowInt = stoi(words[1]);
+    if (isUnfollowInt == 0){
+            char buffer[1];
+            buffer[0] = 0x0;
+            handler.sendBytes(buffer, 1);
+
+        } else if (isUnfollowInt == 1){
+            char buffer[1];
+            buffer[0] = 0x1;
+            handler.sendBytes(buffer, 1);
+        } else{
+            shared.print("i hate you");
         }
 
-        if (!sharedResourceInfo.getUserInput().empty()) {
-            // call server
-            string input = sharedResourceInfo.getUserInput();
-            string command;
-            bool success_send;
-            vector<string> words;
-            boost::split(words, input , boost::is_any_of(" "));
-            command = words[0]; // will not fail
-            boost::to_upper(command);
+    int numOfUsersInt = stoi(words[2]);
+    short numOfUsers =(short) numOfUsersInt;
 
-            if (command == "REGISTER"){
-                connectionHandler.sendShort(1); // user name
-                connectionHandler.sendFrameAscii(words[1], 0x0);// pass
-                success_send = connectionHandler.sendFrameAscii(words[2], 0x0);
-
-            } else if (command == "LOGIN"){
-                connectionHandler.sendShort(2); // user name
-                connectionHandler.sendFrameAscii(words[1], 0x0); // pass
-                success_send = connectionHandler.sendFrameAscii(words[2], 0x0);
-
-            } else if (command == "LOGOUT"){
-                connectionHandler.sendShort(3);
-
-            } else if (command == "FOLLOW"){
-                connectionHandler.sendShort(4);
-
-                int isUnfollowInt = stoi(words[1]);
-                if (isUnfollowInt == 0){
-                    char buffer[1];
-                    buffer[0] = 0x0;
-                    connectionHandler.sendBytes(buffer, 1);
-
-                } else if (isUnfollowInt == 1){
-                    char buffer[1];
-                    buffer[0] = 0x1;
-                    connectionHandler.sendBytes(buffer, 1);
-                } else{
-                    cout << "i hate you" << endl;
-                    sharedResourceInfo.getUserInput().clear();
-                    continue;
-                }
-
-                int numOfUsersInt = std::stoi(words[2]);
-                short numOfUsers =(short) numOfUsersInt;
-
-                connectionHandler.sendShort(numOfUsers);
-                for (int j = 0; j < numOfUsers; ++j) {
-                    //usernames
-                    connectionHandler.sendFrameAscii(words[3+j], 0x0);
-                }
-
-
-            }else if (command == "POST"){
-                connectionHandler.sendShort(5);
-                connectionHandler.sendFrameAscii(words[1], 0x0); // content
-
-            }else if (command == "PM"){
-                connectionHandler.sendShort(6);
-                connectionHandler.sendFrameAscii(words[1], 0x0); // username
-                connectionHandler.sendFrameAscii(words[2], 0x0); // content
-
-            }else if (command == "USERLIST"){
-                connectionHandler.sendShort(7);
-
-            }else if (command == "STAT"){
-                connectionHandler.sendShort(8);
-                connectionHandler.sendFrameAscii(words[1], 0x0); // username
-
-            }else { // wrong command
-                sharedResourceInfo.getUserInput().clear();
-                continue;
-            }
-
-
-            // handle response
-            if (success_send) {
-                cout << "woo" << endl;
-                short opcode = getNextShort(connectionHandler);
-                if (opcode == 10){ // ack
-                    displayMe += "ACK";
-                    short originOpcode = getNextShort(connectionHandler);
-                    displayMe += " ";
-                    displayMe += originOpcode;
-                    // handle
-                    if (originOpcode == 4 or originOpcode == 7){ // follow or user lists
-                        short usersCount = getNextShort(connectionHandler);
-                        for (int j = 0; j < usersCount; ++j) {
-
-                            displayMe += " " + getNextString(connectionHandler);
-                        }
-                    } else if (originOpcode == 8){
-                        short numPosts = getNextShort(connectionHandler);
-                        short numFollowers = getNextShort(connectionHandler);
-                        short numFollowing = getNextShort(connectionHandler);
-                        displayMe += " " + to_string(numPosts)+ " " + to_string(numFollowers) + " " + to_string(numFollowing);
-
-                    } else if(originOpcode == 3){ // terminate
-                        sharedResourceInfo.setShouldTerminate(true);
-                    }
-
-
-
-                } else if (opcode == 11){ // err
-                    short originOpcode = getNextShort(connectionHandler);
-                    displayMe += "ERROR " + originOpcode;
-
-
-                }
-                cout << displayMe << endl;
-
-            }
-
-
-            if (sharedResourceInfo.shouldTerminate()){
-                break;
-            }
-
-            sharedResourceInfo.getUserInput().clear();
+    handler.sendShort(numOfUsers);
+    for (int j = 0; j < numOfUsers; ++j) {
+            //usernames
+            handler.sendFrameAscii(words[3+j], 0x0);
         }
-        sharedResourceInfo.getMutex().unlock();
-    }
 }
 
 string ServerHandler::getNextString(ConnectionHandler &connectionHandler) const {
@@ -187,13 +98,86 @@ string ServerHandler::getNextString(ConnectionHandler &connectionHandler) const 
 
 short ServerHandler::getNextShort(ConnectionHandler &connectionHandler) const {
     char* opcodeResult;
-    connectionHandler.getBytes(opcodeResult, 2);
-    short opcode = connectionHandler.bytesToShort(opcodeResult);
-    return opcode;
+    bool success = connectionHandler.getBytes(opcodeResult, 2);
+    if (success){
+        short opcode = connectionHandler.bytesToShort(opcodeResult);
+        return opcode;
+    } else{
+        return -1;
+    }
 }
 
-ServerHandler::ServerHandler(SharedResourceInfo &sharedResourceInfo) : sharedResourceInfo(sharedResourceInfo) {
+ServerHandler::ServerHandler(Shared &sharedResourceInfo) : shared(sharedResourceInfo) {
 
+}
+
+void ServerHandler::listen() {
+    while (!shared.shouldTerminate()){
+        ConnectionHandler &handler = shared.getConnectionHandler();
+        string displayMe;
+        short opcode = getNextShort(handler);
+        if (opcode == 9){
+            // pm/public
+            char* isPublicByte;
+            handler.getBytes(isPublicByte, 1);
+            short isPublicShort = handler.bytesToShort(isPublicByte);
+            if (isPublicShort == 0){
+                displayMe += "PM";
+            }else if (isPublicShort == 1){
+                displayMe += "Public";
+            } else{
+                shared.print("invalid notification public/pm");
+                continue;
+            }
+
+            //
+            string postingUser = getNextString(handler);
+            displayMe += " ";
+            displayMe += postingUser;
+
+            string content = getNextString(handler);
+            displayMe += " ";
+            displayMe += content;
+
+            cout << displayMe << endl;
+            displayMe.clear();
+            continue;
+            //todo print this in the main thread
+        }
+
+        if (opcode == 10){ // ack
+            displayMe += "ACK";
+            short originOpcode = getNextShort(handler);
+            displayMe += " ";
+            displayMe += originOpcode;
+            // handle
+            if (originOpcode == 4 or originOpcode == 7){ // follow or user lists
+                short usersCount = getNextShort(handler);
+                for (int j = 0; j < usersCount; ++j) {
+
+                    displayMe += " " + getNextString(handler);
+                }
+            } else if (originOpcode == 8){
+                short numPosts = getNextShort(handler);
+                short numFollowers = getNextShort(handler);
+                short numFollowing = getNextShort(handler);
+                displayMe += " " + to_string(numPosts)+ " " + to_string(numFollowers) + " " + to_string(numFollowing);
+
+            } else if(originOpcode == 3){ // terminate
+                shared.setShouldTerminate(true);
+            }
+
+
+        } else if (opcode == 11){ // err
+            short originOpcode = getNextShort(handler);
+            displayMe += "ERROR " + originOpcode;
+
+
+        }
+        cout << displayMe << endl;
+
+
+    }
 }
 
 

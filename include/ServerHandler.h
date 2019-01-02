@@ -6,22 +6,25 @@
 #define CLIENT_SERVERHANDLER_H
 
 #include <mutex>
-#include "SharedResourceInfo.h"
+#include "Shared.h"
 #include "connectionHandler.h"
 
 using namespace std;
 
 class ServerHandler {
 private:
-    SharedResourceInfo &sharedResourceInfo;
+    Shared &shared;
 public:
-    ServerHandler(SharedResourceInfo &sharedResourceInfo);
+    ServerHandler(Shared &sharedResourceInfo);
 
-    void run();
+    void send(string input);
+    void listen();
 
     short getNextShort(ConnectionHandler &connectionHandler) const;
 
     string getNextString(ConnectionHandler &connectionHandler) const;
+
+    void sendFollow(ConnectionHandler &handler, const vector<string> &words) const;
 };
 
 

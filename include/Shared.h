@@ -7,27 +7,26 @@
 
 #include <string>
 #include <mutex>
+#include "connectionHandler.h"
 
 using namespace std;
 
-class SharedResourceInfo {
+class Shared {
 private:
     bool _shuoldTerminate=false;
-    string _userInput;
     mutex &_mutex;
-    short _port;
-    string _host;
+    ConnectionHandler &connectionHandler;
+
 public:
-    SharedResourceInfo(string userInput, mutex &mutex, string host, short port);
 
-    string &getUserInput();
-    void setUserInput(string &userInput);
+    ConnectionHandler &getConnectionHandler() const;
 
+
+public:
+    Shared(string userInput, mutex &mutex, ConnectionHandler &connectionHandler);
+
+    void print(std::string x);
     mutex &getMutex();
-
-    string &getHost();
-
-    short getPort();
 
     bool shouldTerminate();
     void setShouldTerminate(bool terminate);

@@ -15,8 +15,7 @@ ConnectionHandler::~ConnectionHandler() {
 }
  
 bool ConnectionHandler::connect() {
-    std::cout << "Starting connect to " 
-        << host_ << ":" << port_ << std::endl;
+    std::cout << "Starting connect to " << host_ << ":" << port_ << std::endl;
     try {
 		tcp::endpoint endpoint(boost::asio::ip::address::from_string(host_), port_); // the server endpoint
 		boost::system::error_code error;
@@ -160,4 +159,8 @@ bool ConnectionHandler::sendShort(short sh) {
 void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
     bytesArr[0] = ((num >> 8) & 0xFF);
     bytesArr[1] = (num & 0xFF);
+}
+
+bool ConnectionHandler::socketHasData() {
+    return bool(socket_.message_peek);
 }

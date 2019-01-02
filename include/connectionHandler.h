@@ -20,7 +20,7 @@ public:
  
     // Connect to the remote machine
     bool connect();
- 
+    bool socketHasData();
     // Read a fixed number of bytes from the server - blocking.
     // Returns false in case the connection is closed before bytesToRead bytes can be read.
     bool getBytes(char bytes[], unsigned int bytesToRead);

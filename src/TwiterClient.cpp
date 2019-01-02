@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 #include "../include/ServerHandler.h"
-#include "../include/SharedResourceInfo.h"
+#include "../include/Shared.h"
 #include <mutex>
 
 using namespace std;
@@ -17,17 +17,21 @@ int main(int argc, char *argv[]) {
     short port = atoi(argv[2]);
     string inputFromUser;
     std::mutex sharedMutex;
-    SharedResourceInfo *sharedResourceInfo = new SharedResourceInfo(inputFromUser, sharedMutex, host, port);
-    bool shouldTerminate = false;
+    ConnectionHandler connectionHandler(host, port);
+    if (!connectionHandler.connect()) {
+        cerr << "Cannot connect to " << host << ":" << port << endl;
+        exit(1);
+    }
 
-    // start server handler
-    ServerHandler serverHandler(*sharedResourceInfo);
-    thread th1(&ServerHandler::run, &serverHandler);
+    Shared shared = Shared(inputFromUser, sharedMutex, connectionHandler);
 
-    while (!sharedResourceInfo->shouldTerminate()) {
-        string inp;
-        std::cout << "enter call for server: ";
-        std::getline(std::cin, inp);
-        sharedResourceInfo->setUserInput(inp);
+    ServerHandler serverHandler(shared);
+    thread th1(&ServerHandler::listen, &serverHandler);
+
+    while (!shared.shouldTerminate()) {
+        string input;
+        shared.print("enter call for server:\n");
+        std::getline(std::cin, input);
+        serverHandler.send(input);
     }
 }
