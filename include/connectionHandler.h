@@ -17,10 +17,8 @@ private:
 public:
     ConnectionHandler(std::string host, short port);
     virtual ~ConnectionHandler();
- 
     // Connect to the remote machine
     bool connect();
-    bool socketHasData();
     // Read a fixed number of bytes from the server - blocking.
     // Returns false in case the connection is closed before bytesToRead bytes can be read.
     bool getBytes(char bytes[], unsigned int bytesToRead);
@@ -35,21 +33,16 @@ public:
 	
     // Read an ascii line from the server
     // Returns false in case connection closed before a newline can be read.
-    bool getLine(std::string& line);
-
-    bool getFirstTwoBitsAsNum();
     short bytesToShort(char * bytesArr);
 
     bool getFrameAscii(std::string& frame, char delimiter);
 
 	// Send an ascii line from the server
     // Returns false in case connection closed before all the data is sent.
-    bool sendLine(std::string& line);
- 
+
     // Get Ascii data from the server until the delimiter character
     // Returns false in case connection closed before null can be read.
-    bool getFirstTwoBitsAsNum(std::string &frame, char delimiter);
- 
+
     // Send a message to the remote host.
     // Returns false in case connection is closed before all the data is sent.
     bool sendFrameAscii(const std::string& frame, char delimiter);

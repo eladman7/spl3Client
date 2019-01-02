@@ -40,7 +40,7 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
 		if(error)
 			throw boost::system::system_error(error);
     } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cerr << "getBytes recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
@@ -56,7 +56,7 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
             frame.append(1, ch);
         }while (delimiter != ch);
     } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cerr << "getFrameAscii recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
@@ -72,50 +72,7 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
 		if(error)
 			throw boost::system::system_error(error);
     } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
-        return false;
-    }
-    return true;
-}
- 
-bool ConnectionHandler::getLine(std::string& line) {
-    return getFirstTwoBitsAsNum(line, '\n');
-}
-
-bool ConnectionHandler::sendLine(std::string& line) {
-    return sendFrameAscii(line, '\n');
-}
- 
-bool ConnectionHandler::getFirstTwoBitsAsNum(std::string &frame, char delimiter) {
-    char ch;
-    // Stop when we encounter the null character. 
-    // Notice that the null character is not appended to the frame string.
-    try {
-		do{
-			getBytes(&ch, 1);
-            frame.append(1, ch);
-        }while (delimiter != ch);
-    } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
-        return false;
-    }
-    return true;
-}
-
-
-bool ConnectionHandler::getFirstTwoBitsAsNum() {
-    int i = 0;
-    char ch;
-    char *bytesArr;
-
-    try {
-        do{
-            getBytes(&ch, 1);
-//            bytesArr[i] =    d(1, ch);
-            i += 1;
-        }while (i<2);
-    } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cerr << "sendBytes recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
@@ -161,6 +118,3 @@ void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
     bytesArr[1] = (num & 0xFF);
 }
 
-bool ConnectionHandler::socketHasData() {
-    return bool(socket_.message_peek);
-}
