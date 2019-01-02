@@ -19,6 +19,40 @@ void ServerHandler::run() {
     }
     while (!sharedResourceInfo.shouldTerminate()) {
         lock_guard<mutex> lock(sharedResourceInfo.getMutex());
+
+
+        // pending notifications
+        char* notifyBytes;
+        bool success = connectionHandler.getBytes(notifyBytes, 2);
+        if (success){
+            short notifycode = connectionHandler.bytesToShort(notifyBytes)
+            if (notifycode == 9){
+                char* isPublicBytes;
+
+                // pm/public
+                connectionHandler.getBytes(isPublicBytes, 1);
+                short isPublicShort = connectionHandler.bytesToShort(isPublicBytes);
+                bool isPublic;
+                if (isPublicShort == 0){
+                    isPublic = false;
+                }else if (isPublicShort == 1){
+                    isPublic = true;
+                } else{
+                    std::cout << "invalid notification public/pm" << std::endl;
+                    continue;
+                }
+                //
+                char* postingUserBytes;
+                connectionHandler.getLine()
+                if (isPublic){
+
+                }else{
+
+                }
+
+            }
+        }
+
         if (!sharedResourceInfo.getUserInput().empty()) {
             // call server
             string input = sharedResourceInfo.getUserInput();
@@ -38,6 +72,15 @@ void ServerHandler::run() {
                 success_send = connectionHandler.sendFrameAscii(words[2], 0x0);
                 if (success_send) {
                     std::cout << "woo" << std::endl;
+                    char* opcodeResult;
+                    connectionHandler.getBytes(opcodeResult, 2);
+                    short opcode = connectionHandler.bytesToShort(opcodeResult);
+                    if (opcode == 10){ // ack
+
+                    } else if (opcode == 11){ // err
+
+                    }
+
                 }
             } else if (command == "LOGIN"){
 
