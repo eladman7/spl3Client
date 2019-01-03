@@ -58,7 +58,7 @@ void ServerHandler::send(string input) {
     }
 
     if (success_send) {
-        shared.print("success send");
+//        shared.print("success send");
     }
 
 }

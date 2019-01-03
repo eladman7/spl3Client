@@ -56,7 +56,7 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
             frame.append(1, ch);
         }while (delimiter != ch);
     } catch (std::exception& e) {
-//        std::cerr << "getFrameAscii recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cerr << "getFrameAscii recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
@@ -109,7 +109,7 @@ bool ConnectionHandler::sendShort(short sh) {
     buffer[1] = p_int[1];
 
     shortToBytes(sh, buffer);
-    std::cout << "short "+ std::to_string(sh) + " sent!" << std::endl;
+//    std::cout << "short "+ std::to_string(sh) + " sent!" << std::endl;
     return sendBytes(buffer, 2);
 }
 
