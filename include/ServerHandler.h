@@ -25,6 +25,10 @@ public:
     string getNextString(ConnectionHandler &connectionHandler) const;
 
     void sendFollow(ConnectionHandler &handler, const vector<string> &words) const;
+
+    void handleNotification(ConnectionHandler &handler, string &displayMe) const;
+
+    void handleAck(ConnectionHandler &handler, string &displayMe) const;
 };
 
 

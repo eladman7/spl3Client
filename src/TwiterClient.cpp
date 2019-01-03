@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     while (!shared.shouldTerminate()) {
         string input;
-        shared.print("enter call for server:\n");
+//        shared.print("enter call for server:\n");
         std::getline(std::cin, input);
         serverHandler.send(input);
     }

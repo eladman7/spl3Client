@@ -14,7 +14,7 @@ void ServerHandler::send(string input) {
     ConnectionHandler &handler = shared.getConnectionHandler();
 
     string command;
-    bool success_send;
+    bool success_send = false;
     vector<string> words;
     boost::split(words, input , boost::is_any_of(" "));
     if (words.size() < 1){
@@ -63,6 +63,34 @@ void ServerHandler::send(string input) {
 
 }
 
+void ServerHandler::listen() {
+    while (!shared.shouldTerminate()){
+        ConnectionHandler &handler = shared.getConnectionHandler();
+        string displayMe;
+        short opcode = getNextShort(handler);
+
+        if (opcode == -1){
+            shared.print("server stopped. exiting...");
+            shared.setShouldTerminate(true);
+
+        }else if (opcode == 9){
+            handleNotification(handler, displayMe);
+
+        }else if (opcode == 10){ // ack
+            handleAck(handler, displayMe);
+
+        } else if (opcode == 11){ // err
+            short originOpcode = getNextShort(handler);
+            displayMe += "ERROR " + to_string(originOpcode);
+        }
+
+        if (!displayMe.empty()){
+            cout << displayMe << endl;
+            displayMe.clear();
+        }
+    }
+}
+
 void ServerHandler::sendFollow(ConnectionHandler &handler, const vector<string> &words) const {
     handler.sendShort(4);
 
@@ -107,76 +135,53 @@ short ServerHandler::getNextShort(ConnectionHandler &connectionHandler) const {
     }
 }
 
-ServerHandler::ServerHandler(Shared &sharedResourceInfo) : shared(sharedResourceInfo) {
+ServerHandler::ServerHandler(Shared &sharedResourceInfo) : shared(sharedResourceInfo) {}
 
+void ServerHandler::handleAck(ConnectionHandler &handler, string &displayMe) const {
+    displayMe += "ACK";
+    short originOpcode = getNextShort(handler);
+    displayMe += " ";
+    displayMe += to_string(originOpcode);
+    // handle
+    if (originOpcode == 4 or originOpcode == 7){ // follow or user lists
+        short usersCount = getNextShort(handler);
+        for (int j = 0; j < usersCount; ++j) {
+            displayMe += " " + getNextString(handler);
+        }
+
+    } else if (originOpcode == 8){
+        short numPosts = getNextShort(handler);
+        short numFollowers = getNextShort(handler);
+        short numFollowing = getNextShort(handler);
+        displayMe += " " + to_string(numPosts)+ " " + to_string(numFollowers) + " " + to_string(numFollowing);
+
+    } else if(originOpcode == 3){ // terminate
+        shared.setShouldTerminate(true);
+    }
 }
 
-void ServerHandler::listen() {
-    while (!shared.shouldTerminate()){
-        ConnectionHandler &handler = shared.getConnectionHandler();
-        string displayMe;
-        short opcode = getNextShort(handler);
-        if (opcode == 9){
-            // pm/public
-            char* isPublicByte;
-            handler.getBytes(isPublicByte, 1);
-            short isPublicShort = handler.bytesToShort(isPublicByte);
-            if (isPublicShort == 0){
-                displayMe += "PM";
-            }else if (isPublicShort == 1){
-                displayMe += "Public";
-            } else{
-                shared.print("invalid notification public/pm");
-                continue;
-            }
+void ServerHandler::handleNotification(ConnectionHandler &handler, string &displayMe) const {// pm/public
+    char* isPublicByte;
+    handler.getBytes(isPublicByte, 1);
+    short isPublicShort = handler.bytesToShort(isPublicByte);
 
-            //
-            string postingUser = getNextString(handler);
-            displayMe += " ";
-            displayMe += postingUser;
-
-            string content = getNextString(handler);
-            displayMe += " ";
-            displayMe += content;
-
-            cout << displayMe << endl;
-            displayMe.clear();
-            continue;
-        }
-
-        if (opcode == 10){ // ack
-            displayMe += "ACK";
-            short originOpcode = getNextShort(handler);
-            displayMe += " ";
-            displayMe += to_string(originOpcode);
-            // handle
-            if (originOpcode == 4 or originOpcode == 7){ // follow or user lists
-                short usersCount = getNextShort(handler);
-                for (int j = 0; j < usersCount; ++j) {
-
-                    displayMe += " " + getNextString(handler);
-                }
-            } else if (originOpcode == 8){
-                short numPosts = getNextShort(handler);
-                short numFollowers = getNextShort(handler);
-                short numFollowing = getNextShort(handler);
-                displayMe += " " + to_string(numPosts)+ " " + to_string(numFollowers) + " " + to_string(numFollowing);
-
-            } else if(originOpcode == 3){ // terminate
-                shared.setShouldTerminate(true);
-            }
-
-
-        } else if (opcode == 11){ // err
-            short originOpcode = getNextShort(handler);
-            displayMe += "ERROR " + originOpcode;
-
-
-        }
-        cout << displayMe << endl;
-
-
+    if (isPublicShort == 0){
+        displayMe += "PM";
+    }else if (isPublicShort == 1){
+        displayMe += "Public";
+    } else{
+        shared.print("invalid notification public/pm");
+        return;
     }
+
+    //
+    string postingUser = getNextString(handler);
+    displayMe += " ";
+    displayMe += postingUser;
+
+    string content = getNextString(handler);
+    displayMe += " ";
+    displayMe += content;
 }
 
 
