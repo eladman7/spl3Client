@@ -109,7 +109,7 @@ bool ConnectionHandler::sendShort(short sh) {
     buffer[1] = p_int[1];
 
     shortToBytes(sh, buffer);
-
+    std::cout << "short "+ std::to_string(sh) + " sent!" << std::endl;
     return sendBytes(buffer, 2);
 }
 

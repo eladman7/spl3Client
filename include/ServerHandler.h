@@ -24,7 +24,7 @@ public:
 
     string getNextString(ConnectionHandler &connectionHandler) const;
 
-    void sendFollow(ConnectionHandler &handler, const vector<string> &words) const;
+    bool sendFollow(ConnectionHandler &handler, const vector<string> &words) const;
 
     void handleNotification(ConnectionHandler &handler, string &displayMe) const;
 

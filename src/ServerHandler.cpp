@@ -34,26 +34,26 @@ void ServerHandler::send(string input) {
         success_send = handler.sendFrameAscii(words[2], 0x0);
 
     } else if (command == "LOGOUT"){
-        handler.sendShort(3);
+        success_send = handler.sendShort(3);
 
     } else if (command == "FOLLOW"){
-        sendFollow(handler, words);
+        success_send = sendFollow(handler, words);
 
     }else if (command == "POST"){
         handler.sendShort(5);
-        handler.sendFrameAscii(words[1], 0x0); // content
+        success_send = handler.sendFrameAscii(words[1], 0x0); // content
 
     }else if (command == "PM"){
         handler.sendShort(6);
         handler.sendFrameAscii(words[1], 0x0); // username
-        handler.sendFrameAscii(words[2], 0x0); // content
+        success_send = handler.sendFrameAscii(words[2], 0x0); // content
 
     }else if (command == "USERLIST"){
-        handler.sendShort(7);
+        success_send = handler.sendShort(7);
 
     }else if (command == "STAT"){
         handler.sendShort(8);
-        handler.sendFrameAscii(words[1], 0x0); // username
+        success_send = handler.sendFrameAscii(words[1], 0x0); // username
 
     }
 
@@ -72,6 +72,7 @@ void ServerHandler::listen() {
         if (opcode == -1){
             shared.print("server stopped. exiting...");
             shared.setShouldTerminate(true);
+            exit(0);
 
         }else if (opcode == 9){
             handleNotification(handler, displayMe);
@@ -88,10 +89,14 @@ void ServerHandler::listen() {
             cout << displayMe << endl;
             displayMe.clear();
         }
+        if (shared.shouldTerminate()){
+            shared.print("logged out");
+            exit(0);
+        }
     }
 }
 
-void ServerHandler::sendFollow(ConnectionHandler &handler, const vector<string> &words) const {
+bool ServerHandler::sendFollow(ConnectionHandler &handler, const vector<string> &words) const {
     handler.sendShort(4);
 
     int isUnfollowInt = stoi(words[1]);
@@ -111,11 +116,13 @@ void ServerHandler::sendFollow(ConnectionHandler &handler, const vector<string> 
     int numOfUsersInt = stoi(words[2]);
     short numOfUsers =(short) numOfUsersInt;
 
-    handler.sendShort(numOfUsers);
+    bool success = false;
+    success = handler.sendShort(numOfUsers);
     for (int j = 0; j < numOfUsers; ++j) {
             //usernames
-            handler.sendFrameAscii(words[3+j], 0x0);
+            success = handler.sendFrameAscii(words[3+j], 0x0);
         }
+    return success;
 }
 
 string ServerHandler::getNextString(ConnectionHandler &connectionHandler) const {
