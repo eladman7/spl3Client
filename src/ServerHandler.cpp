@@ -128,7 +128,7 @@ bool ServerHandler::sendFollow(ConnectionHandler &handler, const vector<string> 
 string ServerHandler::getNextString(ConnectionHandler &connectionHandler) const {
     string postingUser;
     connectionHandler.getFrameAscii(postingUser, 0x0);
-    return postingUser;
+    return postingUser.substr(0, postingUser.size()-1);  // cut the last 0 from string
 }
 
 short ServerHandler::getNextShort(ConnectionHandler &connectionHandler) const {
@@ -168,7 +168,7 @@ void ServerHandler::handleAck(ConnectionHandler &handler, string &displayMe) con
 }
 
 void ServerHandler::handleNotification(ConnectionHandler &handler, string &displayMe) const {// pm/public
-    char* isPublicByte;
+    char isPublicByte [1];
     handler.getBytes(isPublicByte, 1);
     short isPublicShort = handler.bytesToShort(isPublicByte);
 
@@ -182,13 +182,11 @@ void ServerHandler::handleNotification(ConnectionHandler &handler, string &displ
     }
 
     //
-    string postingUser = getNextString(handler);
     displayMe += " ";
-    displayMe += postingUser;
+    displayMe += getNextString(handler);
 
-    string content = getNextString(handler);
     displayMe += " ";
-    displayMe += content;
+    displayMe += getNextString(handler);
 }
 
 
