@@ -170,11 +170,11 @@ void ServerHandler::handleAck(ConnectionHandler &handler, string &displayMe) con
 void ServerHandler::handleNotification(ConnectionHandler &handler, string &displayMe) const {// pm/public
     char isPublicByte [1];
     handler.getBytes(isPublicByte, 1);
-    short isPublicShort = handler.bytesToShort(isPublicByte);
+//    short isPublicShort = handler.bytesToShort(isPublicByte);
 
-    if (isPublicShort == 0){
+    if (isPublicByte[0] == 0x0){
         displayMe += "PM";
-    }else if (isPublicShort == 1){
+    }else if (isPublicByte[0] == 0x1){
         displayMe += "Public";
     } else{
         shared.print("invalid notification public/pm");
