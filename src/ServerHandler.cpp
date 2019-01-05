@@ -5,7 +5,7 @@
 //
 
 #include "../include/ServerHandler.h"
-#include "../include/connectionHandler.h"
+#include "../include/ConnectionHandler.h"
 #include <mutex>
 
 using namespace std;

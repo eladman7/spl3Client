@@ -1,17 +1,23 @@
 CFLAGS:=-c -Wall -Weffc++ -g -std=c++11 -Iinclude
-LDFLAGS:=-lboost_system
+# LDFLAGS:=-lboost_system
 
-all: EchoClient
-	g++ -o bin/echoExample bin/connectionHandler.o bin/echoClient.o $(LDFLAGS) 
+all: Client
+	g++ -o bin/TwiterClient.o bin/ConnectionHandler.o bin/ServerHandler.o bin/Shared.o -lboost_system -lpthread -lrt -c
 
-EchoClient: bin/connectionHandler.o bin/echoClient.o
-	
-bin/connectionHandler.o: src/connectionHandler.cpp
-	g++ $(CFLAGS) -o bin/connectionHandler.o src/connectionHandler.cpp
+Client: bin/TwiterClient.o bin/ConnectionHandler.o bin/ServerHandler.o bin/Shared.o
 
-bin/echoClient.o: src/echoClient.cpp
-	g++ $(CFLAGS) -o bin/echoClient.o src/echoClient.cpp
-	
+bin/TwiterClient.o: src/TwiterClient.cpp
+	g++ $(CFLAGS) -o bin/TwiterClient.o src/TwiterClient.cpp
+
+bin/ConnectionHandler.o: src/ConnectionHandler.cpp
+	g++ $(CFLAGS) -o bin/ConnectionHandler.o src/ConnectionHandler.cpp
+
+bin/ServerHandler.o: src/ServerHandler.cpp
+	g++ $(CFLAGS) -o bin/ServerHandler.o src/ServerHandler.cpp
+
+bin/Shared.o: src/Shared.cpp
+	g++ $(CFLAGS) -o bin/Shared.o src/Shared.cpp
+
 .PHONY: clean
 clean:
 	rm -f bin/*

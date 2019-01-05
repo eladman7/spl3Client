@@ -9,8 +9,8 @@ find_package(Boost 1.58.0 REQUIRED COMPONENTS
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     add_executable(Client
-            include/connectionHandler.h
-            src/connectionHandler.cpp
+            include/ConnectionHandler.h
+            src/ConnectionHandler.cpp
 
             include/ServerHandler.h
             src/ServerHandler.cpp

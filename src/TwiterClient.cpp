@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include "../include/ServerHandler.h"
+#include "../include/ConnectionHandler.h"
 #include "../include/Shared.h"
 #include <mutex>
 
