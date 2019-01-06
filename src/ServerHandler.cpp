@@ -14,7 +14,6 @@ void ServerHandler::send(string input) {
     ConnectionHandler &handler = shared.getConnectionHandler();
 
     string command;
-    bool success_send = false;
     vector<string> words;
     boost::split(words, input, boost::is_any_of(" "));
     if (words.size() < 1) {
@@ -26,42 +25,38 @@ void ServerHandler::send(string input) {
     if (command == "REGISTER") {
         handler.sendShort(1); // user name
         handler.sendFrameAscii(words[1], 0x0);// pass
-        success_send = handler.sendFrameAscii(words[2], 0x0);
+        handler.sendFrameAscii(words[2], 0x0);
 
     } else if (command == "LOGIN") {
         handler.sendShort(2); // user name
         handler.sendFrameAscii(words[1], 0x0); // pass
-        success_send = handler.sendFrameAscii(words[2], 0x0);
+        handler.sendFrameAscii(words[2], 0x0);
 
     } else if (command == "LOGOUT") {
-        success_send = handler.sendShort(3);
+        handler.sendShort(3);
 
     } else if (command == "FOLLOW") {
-        success_send = sendFollow(handler, words);
+        sendFollow(handler, words);
 
     } else if (command == "POST") {
         handler.sendShort(5);
         string content;
         content = input.substr(5, input.size());
-        success_send = handler.sendFrameAscii(content, 0x0); // content
+        handler.sendFrameAscii(content, 0x0); // content
 
     } else if (command == "PM") {
         handler.sendShort(6);
         handler.sendFrameAscii(words[1], 0x0); // username
         string content;
         content = input.substr(3 + words[1].size() + 1, input.size());
-        success_send = handler.sendFrameAscii(content, 0x0); // content
+        handler.sendFrameAscii(content, 0x0); // content
     } else if (command == "USERLIST") {
-        success_send = handler.sendShort(7);
+        handler.sendShort(7);
 
     } else if (command == "STAT") {
         handler.sendShort(8);
-        success_send = handler.sendFrameAscii(words[1], 0x0); // username
+        handler.sendFrameAscii(words[1], 0x0); // username
 
-    }
-
-    if (success_send) {
-//        shared.print("success send");
     }
 
 }
@@ -73,7 +68,6 @@ void ServerHandler::listen() {
         short opcode = getNextShort(handler);
 
         if (opcode == -1) {
-            shared.print("server stopped. exiting...");
             shared.setShouldTerminate(true);
             exit(0);
 
@@ -93,7 +87,6 @@ void ServerHandler::listen() {
             displayMe.clear();
         }
         if (shared.shouldTerminate()) {
-            shared.print("logged out");
             exit(0);
         }
     }
@@ -113,7 +106,8 @@ bool ServerHandler::sendFollow(ConnectionHandler &handler, const vector<string> 
         buffer[0] = 0x1;
         handler.sendBytes(buffer, 1);
     } else {
-        shared.print("i hate you");
+        // illegal pm flag
+        return false;
     }
 
     int numOfUsersInt = stoi(words[2]);
@@ -173,14 +167,12 @@ void ServerHandler::handleAck(ConnectionHandler &handler, string &displayMe) con
 void ServerHandler::handleNotification(ConnectionHandler &handler, string &displayMe) const {// pm/public
     char isPublicByte[1];
     handler.getBytes(isPublicByte, 1);
-//    short isPublicShort = handler.bytesToShort(isPublicByte);
 
     if (isPublicByte[0] == 0x0) {
         displayMe += "PM";
     } else if (isPublicByte[0] == 0x1) {
         displayMe += "Public";
     } else {
-        shared.print("invalid notification public/pm");
         return;
     }
 
